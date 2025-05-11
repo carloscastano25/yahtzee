@@ -287,8 +287,8 @@ class YahtzeeGame:
         for categoria in categorias_disponibles:
             total_puntuacion = 0
             for _ in range(self.num_simulaciones):
-                # Simular la puntuación para la categoría actual
-                puntuacion = self.simular_puntuacion(categoria)
+                # Simular el resto del turno y obtener la puntuación final
+                puntuacion = self.simular_turno(categoria, list(self.dados), list(self.dados_congelados), self.lanzamientos_restantes)
                 total_puntuacion += puntuacion
 
             # Calcular la puntuación promedio para la categoría
@@ -302,6 +302,28 @@ class YahtzeeGame:
 
         # Asignar la categoría y continuar
         self.asignar_categoria_montecarlo(mejor_categoria)
+
+    def simular_turno(self, categoria, dados_iniciales, dados_congelados_iniciales, lanzamientos_restantes_iniciales):
+        """Simula el resto del turno y devuelve la puntuación para la categoría dada."""
+        dados_simulados = list(dados_iniciales)
+        dados_congelados = list(dados_congelados_iniciales)
+        lanzamientos_restantes = lanzamientos_restantes_iniciales
+
+        # Simular los lanzamientos restantes
+        while lanzamientos_restantes > 0:
+            # Lanzar los dados no congelados
+            for i in range(5):
+                if not dados_congelados[i]:
+                    dados_simulados[i] = self.simular_lanzamiento()
+
+            lanzamientos_restantes -= 1
+
+            # Congelar dados aleatoriamente (simulando una estrategia)
+            for i in range(5):
+                dados_congelados[i] = random.random() < 0.5  # 50% de probabilidad de congelar
+
+        # Calcular la puntuación para la categoría
+        return self.calcular_puntuacion_categoria_simulada(categoria, dados_simulados)
 
     def simular_puntuacion(self, categoria):
         """Simula la puntuación para una categoría dada."""
